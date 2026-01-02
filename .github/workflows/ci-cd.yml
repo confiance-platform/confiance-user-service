@@ -9,12 +9,15 @@ on:
 
 env:
   DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-  SERVICE_NAME: user-service  # ⚠️ CHANGE THIS FOR EACH SERVICE
+  SERVICE_NAME: user-service
   JAVA_VERSION: '17'
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
 
     steps:
       - name: Checkout code
@@ -28,22 +31,46 @@ jobs:
           cache: maven
 
       - name: Cache Maven packages
-        uses: actions/cache@v4
+        uses: actions/cache@v3
         with:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
-      - name: Download common-lib from GitHub Packages
+      - name: Configure Maven for GitHub Packages
         run: |
-          # Authenticate with GitHub Packages
-          echo "<settings><servers><server><id>github</id><username>${{ github.actor }}</username><password>${{ secrets.GITHUB_TOKEN }}</password></server></servers></settings>" > ~/.m2/settings.xml
+          mkdir -p ~/.m2
+          cat > ~/.m2/settings.xml << 'MAVEN_SETTINGS'
+          <settings>
+            <servers>
+              <server>
+                <id>github-parent</id>
+                <username>${env.GITHUB_ACTOR}</username>
+                <password>${env.GITHUB_TOKEN}</password>
+              </server>
+              <server>
+                <id>github-common</id>
+                <username>${env.GITHUB_ACTOR}</username>
+                <password>${env.GITHUB_TOKEN}</password>
+              </server>
+            </servers>
+          </settings>
+          MAVEN_SETTINGS
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_ACTOR: ${{ github.actor }}
 
       - name: Build with Maven
         run: mvn clean package -DskipTests
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_ACTOR: ${{ github.actor }}
 
       - name: Run tests
         run: mvn test
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_ACTOR: ${{ github.actor }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -113,6 +140,6 @@ jobs:
           severity: 'CRITICAL,HIGH'
 
       - name: Upload results
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: 'trivy-results.sarif'
