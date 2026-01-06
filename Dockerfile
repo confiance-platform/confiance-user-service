@@ -1,5 +1,5 @@
 # Spring Boot User Service Docker Image
-FROM eclipse-temurin:17-jre-alpine
+FROM amazoncorretto:17-alpine3.19
 
 WORKDIR /app
 
