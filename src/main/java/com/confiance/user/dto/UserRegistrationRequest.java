@@ -1,5 +1,6 @@
 package com.confiance.user.dto;
 
+import com.confiance.common.enums.Salutation;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -25,8 +26,12 @@ public class UserRegistrationRequest {
             message = "Password must contain at least one digit, one lowercase, one uppercase, one special character")
     private String password;
 
+    private Salutation salutation;
+
     @NotBlank(message = "First name is required")
     private String firstName;
+
+    private String middleName;
 
     @NotBlank(message = "Last name is required")
     private String lastName;
@@ -42,4 +47,7 @@ public class UserRegistrationRequest {
     private String city;
     private String address;
     private String postalCode;
+
+    // Referral code of the person who referred this user (optional)
+    private String referralCode;
 }

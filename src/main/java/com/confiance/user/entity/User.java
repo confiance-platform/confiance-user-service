@@ -1,6 +1,7 @@
 package com.confiance.user.entity;
 
 import com.confiance.common.enums.Permission;
+import com.confiance.common.enums.Salutation;
 import com.confiance.common.enums.UserRole;
 import com.confiance.common.enums.UserStatus;
 import jakarta.persistence.*;
@@ -19,7 +20,8 @@ import java.util.Set;
 @Entity
 @Table(name = "users", indexes = {
         @Index(name = "idx_email", columnList = "email"),
-        @Index(name = "idx_contact_number", columnList = "contactNumber")
+        @Index(name = "idx_contact_number", columnList = "contactNumber"),
+        @Index(name = "idx_referral_code", columnList = "referralCode")
 })
 @Data
 @Builder
@@ -38,8 +40,13 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+    @Enumerated(EnumType.STRING)
+    private Salutation salutation;
+
     @Column(nullable = false)
     private String firstName;
+
+    private String middleName;
 
     @Column(nullable = false)
     private String lastName;
@@ -49,6 +56,13 @@ public class User {
 
     @Column(nullable = false)
     private String country;
+
+    // Unique referral code for this user (auto-generated)
+    @Column(unique = true)
+    private String referralCode;
+
+    // The referral code used during registration (who referred this user)
+    private String referredByCode;
 
     private String state;
     private String city;

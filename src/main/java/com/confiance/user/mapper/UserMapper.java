@@ -13,7 +13,9 @@ public class UserMapper {
     public User toEntity(UserRegistrationRequest request) {
         return User.builder()
                 .email(request.getEmail())
+                .salutation(request.getSalutation())
                 .firstName(request.getFirstName())
+                .middleName(request.getMiddleName())
                 .lastName(request.getLastName())
                 .contactNumber(request.getContactNumber())
                 .country(request.getCountry())
@@ -21,6 +23,7 @@ public class UserMapper {
                 .city(request.getCity())
                 .address(request.getAddress())
                 .postalCode(request.getPostalCode())
+                .referredByCode(request.getReferralCode())
                 .build();
     }
 
@@ -28,7 +31,9 @@ public class UserMapper {
         return UserResponse.builder()
                 .id(user.getId())
                 .email(user.getEmail())
+                .salutation(user.getSalutation())
                 .firstName(user.getFirstName())
+                .middleName(user.getMiddleName())
                 .lastName(user.getLastName())
                 .contactNumber(user.getContactNumber())
                 .country(user.getCountry())
@@ -36,6 +41,8 @@ public class UserMapper {
                 .city(user.getCity())
                 .address(user.getAddress())
                 .postalCode(user.getPostalCode())
+                .referralCode(user.getReferralCode())
+                .referredByCode(user.getReferredByCode())
                 .roles(user.getRoles())
                 .permissions(user.getPermissions())
                 .status(user.getStatus())
@@ -58,8 +65,14 @@ public class UserMapper {
     }
 
     public void updateEntity(User user, UserUpdateRequest request) {
+        if (request.getSalutation() != null) {
+            user.setSalutation(request.getSalutation());
+        }
         if (request.getFirstName() != null) {
             user.setFirstName(request.getFirstName());
+        }
+        if (request.getMiddleName() != null) {
+            user.setMiddleName(request.getMiddleName());
         }
         if (request.getLastName() != null) {
             user.setLastName(request.getLastName());

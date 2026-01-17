@@ -60,11 +60,21 @@ public class UserService {
         user.setStatus(UserStatus.ACTIVE);
         user.setEmailVerified(false);
 
+        // Generate unique referral code for this user
+        user.setReferralCode(generateReferralCode(request.getFirstName(), request.getLastName()));
+
         User savedUser = userRepository.save(user);
 
         sendWelcomeEmail(savedUser);
 
         return userMapper.toResponse(savedUser);
+    }
+
+    private String generateReferralCode(String firstName, String lastName) {
+        String prefix = (firstName.substring(0, Math.min(2, firstName.length())) +
+                        lastName.substring(0, Math.min(2, lastName.length()))).toUpperCase();
+        String randomPart = String.valueOf(System.currentTimeMillis() % 100000);
+        return prefix + randomPart;
     }
 
     public UserResponse getUserById(Long userId) {
@@ -133,6 +143,20 @@ public class UserService {
         user.getRoles().remove(role);
         User updatedUser = userRepository.save(user);
         return userMapper.toResponse(updatedUser);
+    }
+
+    public UserInfo getUserByEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
+        return userMapper.toUserInfo(user);
+    }
+
+    @Transactional
+    public void updatePassword(Long userId, String newPassword) {
+        User user = findUserById(userId);
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+        log.info("Password updated for user: {}", userId);
     }
 
     private User findUserById(Long userId) {

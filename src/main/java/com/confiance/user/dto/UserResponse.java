@@ -1,6 +1,7 @@
 package com.confiance.user.dto;
 
 import com.confiance.common.enums.Permission;
+import com.confiance.common.enums.Salutation;
 import com.confiance.common.enums.UserRole;
 import com.confiance.common.enums.UserStatus;
 import lombok.AllArgsConstructor;
@@ -18,7 +19,9 @@ import java.util.Set;
 public class UserResponse {
     private Long id;
     private String email;
+    private Salutation salutation;
     private String firstName;
+    private String middleName;
     private String lastName;
     private String contactNumber;
     private String country;
@@ -26,6 +29,8 @@ public class UserResponse {
     private String city;
     private String address;
     private String postalCode;
+    private String referralCode;
+    private String referredByCode;
     private Set<UserRole> roles;
     private Set<Permission> permissions;
     private UserStatus status;

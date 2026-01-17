@@ -99,4 +99,24 @@ public class UserController {
         UserResponse response = userService.removeRoleFromUser(id, role);
         return ResponseEntity.ok(ApiResponse.success("Role removed successfully", response));
     }
+
+    @GetMapping("/by-email")
+    @Operation(summary = "Get User by Email", description = "Get user info by email address")
+    public ResponseEntity<ApiResponse<UserInfo>> getUserByEmail(@RequestParam String email) {
+        UserInfo response = userService.getUserByEmail(email);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @PutMapping("/{id}/password")
+    @Operation(summary = "Update Password", description = "Update user password")
+    public ResponseEntity<ApiResponse<Void>> updatePassword(
+            @PathVariable Long id,
+            @RequestBody java.util.Map<String, String> request) {
+        String password = request.get("password");
+        if (password == null || password.isBlank()) {
+            throw new IllegalArgumentException("Password is required");
+        }
+        userService.updatePassword(id, password);
+        return ResponseEntity.ok(ApiResponse.success("Password updated successfully", null));
+    }
 }
