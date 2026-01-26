@@ -34,6 +34,7 @@ public class SecurityConfig {
                                 "/api/v1/users/validate-credentials",
                                 "/api/v1/users/by-email",
                                 "/api/v1/users/*/info",
+                                "/api/v1/version/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**",
