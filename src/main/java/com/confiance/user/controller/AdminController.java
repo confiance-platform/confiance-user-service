@@ -2,10 +2,17 @@ package com.confiance.user.controller;
 
 import com.confiance.common.constants.ApiConstants;
 import com.confiance.common.dto.ApiResponse;
+import com.confiance.common.dto.PageResponse;
 import com.confiance.common.dto.PermissionRequest;
 import com.confiance.common.dto.UserPermissionsResponse;
 import com.confiance.common.enums.Permission;
+import com.confiance.common.enums.UserStatus;
+import com.confiance.user.dto.AdminDashboardStats;
+import com.confiance.user.dto.UserWithInvestmentSummary;
+import com.confiance.user.service.AdminDashboardService;
 import com.confiance.user.service.PermissionService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.Set;
 
 /**
@@ -22,9 +30,11 @@ import java.util.Set;
 @RequestMapping(ApiConstants.ADMIN_BASE)
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Admin", description = "Admin Dashboard and Permission Management APIs")
 public class AdminController {
 
     private final PermissionService permissionService;
+    private final AdminDashboardService adminDashboardService;
 
     /**
      * Get all available permissions
@@ -143,6 +153,54 @@ public class AdminController {
                         .success(true)
                         .message("Permission check completed")
                         .data(hasPermission)
+                        .build()
+        );
+    }
+
+    /**
+     * Get admin dashboard statistics
+     * GET /api/v1/admin/dashboard/stats
+     */
+    @GetMapping("/dashboard/stats")
+    @Operation(summary = "Get Dashboard Stats", description = "Get aggregated statistics for admin dashboard")
+    public ResponseEntity<ApiResponse<AdminDashboardStats>> getDashboardStats() {
+        log.info("Fetching admin dashboard statistics");
+        AdminDashboardStats stats = adminDashboardService.getDashboardStats();
+
+        return ResponseEntity.ok(
+                ApiResponse.<AdminDashboardStats>builder()
+                        .success(true)
+                        .message("Dashboard statistics retrieved successfully")
+                        .data(stats)
+                        .build()
+        );
+    }
+
+    /**
+     * Get users with investment summary
+     * GET /api/v1/admin/users/with-investments
+     */
+    @GetMapping("/users/with-investments")
+    @Operation(summary = "Get Users with Investments", description = "Get users list with their investment summary")
+    public ResponseEntity<ApiResponse<PageResponse<UserWithInvestmentSummary>>> getUsersWithInvestments(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDirection,
+            @RequestParam(required = false) UserStatus status,
+            @RequestParam(required = false) Boolean hasInvestments,
+            @RequestParam(required = false) BigDecimal minInvestment,
+            @RequestParam(required = false) BigDecimal maxInvestment) {
+
+        log.info("Fetching users with investment summaries");
+        PageResponse<UserWithInvestmentSummary> response = adminDashboardService.getUsersWithInvestments(
+                page, size, sortBy, sortDirection, status, hasInvestments, minInvestment, maxInvestment);
+
+        return ResponseEntity.ok(
+                ApiResponse.<PageResponse<UserWithInvestmentSummary>>builder()
+                        .success(true)
+                        .message("Users with investments retrieved successfully")
+                        .data(response)
                         .build()
         );
     }

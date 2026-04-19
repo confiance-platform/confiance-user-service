@@ -65,6 +65,10 @@ notification:
   service:
     url: http://notification-service/api/v1/notifications
 
+portfolio:
+  service:
+    url: ${PORTFOLIO_SERVICE_URL:http://portfolio-service:8086}
+
 logging:
   level:
     com.confiance.user: DEBUG
