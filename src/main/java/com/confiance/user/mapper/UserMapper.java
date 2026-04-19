@@ -43,6 +43,7 @@ public class UserMapper {
                 .postalCode(user.getPostalCode())
                 .referralCode(user.getReferralCode())
                 .referredByCode(user.getReferredByCode())
+                .profileImageUrl(user.getProfileImageUrl())
                 .roles(user.getRoles())
                 .permissions(user.getPermissions())
                 .status(user.getStatus())

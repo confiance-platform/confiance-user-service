@@ -71,6 +71,11 @@ public class User {
 
     private LocalDateTime dateOfBirth;
 
+    // Public URL of the user's avatar (Cloudinary secure_url or /files/local/...).
+    // Nullable — UI falls back to a placeholder when empty.
+    @Column(name = "profile_image_url", length = 1024)
+    private String profileImageUrl;
+
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Enumerated(EnumType.STRING)

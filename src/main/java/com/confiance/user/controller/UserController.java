@@ -64,6 +64,28 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.success("User deleted successfully", null));
     }
 
+    @PatchMapping("/{id}/profile-image")
+    @Operation(summary = "Update profile image URL",
+               description = "Set the user's profile image URL (after uploading the file via /files/upload/image)")
+    public ResponseEntity<ApiResponse<UserResponse>> updateProfileImage(
+            @PathVariable Long id,
+            @RequestBody java.util.Map<String, String> body) {
+        String url = body == null ? null : body.get("profileImageUrl");
+        UserResponse response = userService.updateProfileImage(id, url);
+        return ResponseEntity.ok(ApiResponse.success("Profile image updated", response));
+    }
+
+    /**
+     * IDs of all users with ROLE_ADMIN or ROLE_SUPER_ADMIN. Used by other
+     * services (portfolio, recommendation, …) to broadcast activity
+     * notifications to the admin team.
+     */
+    @GetMapping("/admins/ids")
+    @Operation(summary = "Admin user IDs", description = "List user IDs for admins + super admins")
+    public ResponseEntity<ApiResponse<java.util.List<Long>>> getAdminIds() {
+        return ResponseEntity.ok(ApiResponse.success(userService.findAdminIds()));
+    }
+
     @GetMapping
     @Operation(summary = "Get All Users", description = "Get paginated list of users")
     public ResponseEntity<ApiResponse<PageResponse<UserResponse>>> getAllUsers(

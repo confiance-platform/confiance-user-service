@@ -12,6 +12,7 @@ import com.confiance.user.dto.UserRegistrationRequest;
 import com.confiance.user.dto.UserResponse;
 import com.confiance.user.dto.UserUpdateRequest;
 import com.confiance.user.entity.User;
+import com.confiance.common.notification.Notifier;
 import com.confiance.user.mapper.UserMapper;
 import com.confiance.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +40,7 @@ public class UserService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final RestTemplate restTemplate;
+    private final Notifier notifier;
 
     @Value("${notification.service.url}")
     private String notificationServiceUrl;
@@ -67,6 +69,30 @@ public class UserService {
 
         sendWelcomeEmail(savedUser);
 
+        // Fan-out: let admins know a new user just signed up.
+        try {
+            java.util.List<Long> admins = userRepository.findAllAdminIds();
+            String displayName = savedUser.getFirstName() + " " + savedUser.getLastName();
+            notifier.notifyUsers(admins,
+                "New user registered",
+                displayName + " (" + savedUser.getEmail() + ") just signed up.",
+                "USER_REGISTERED",
+                "/admin/users",
+                "ph-user-plus");
+        } catch (Exception e) {
+            log.warn("Admin new-user notification failed: {}", e.getMessage());
+        }
+
+        // Welcome notification for the new user themself.
+        try {
+            notifier.notifyUser(savedUser.getId(),
+                "Welcome to Confiance",
+                "Your account is ready. Start by exploring the dashboard.",
+                "WELCOME",
+                "/dashboard/user",
+                "ph-hand-waving");
+        } catch (Exception ignored) {}
+
         return userMapper.toResponse(savedUser);
     }
 
@@ -93,6 +119,21 @@ public class UserService {
         userMapper.updateEntity(user, request);
         User updatedUser = userRepository.save(user);
         return userMapper.toResponse(updatedUser);
+    }
+
+    @Transactional
+    public UserResponse updateProfileImage(Long userId, String profileImageUrl) {
+        User user = findUserById(userId);
+        // Allow clearing the avatar with an empty string -> stores null.
+        user.setProfileImageUrl(profileImageUrl == null || profileImageUrl.isBlank()
+                ? null : profileImageUrl.trim());
+        User saved = userRepository.save(user);
+        return userMapper.toResponse(saved);
+    }
+
+    /** IDs of admins + super admins — for activity-feed broadcasts. */
+    public java.util.List<Long> findAdminIds() {
+        return userRepository.findAllAdminIds();
     }
 
     @Transactional

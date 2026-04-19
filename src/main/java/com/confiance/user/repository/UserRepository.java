@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -39,4 +40,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("SELECT COUNT(u) FROM User u WHERE u.createdAt >= :startOfMonth")
     long countNewUsersThisMonth(@Param("startOfMonth") LocalDateTime startOfMonth);
+
+    // IDs of users holding EITHER ROLE_ADMIN or ROLE_SUPER_ADMIN — used by
+    // other services to broadcast activity notifications to admins.
+    @Query("SELECT DISTINCT u.id FROM User u JOIN u.roles r " +
+           "WHERE r IN (com.confiance.common.enums.UserRole.ROLE_ADMIN, com.confiance.common.enums.UserRole.ROLE_SUPER_ADMIN)")
+    List<Long> findAllAdminIds();
 }

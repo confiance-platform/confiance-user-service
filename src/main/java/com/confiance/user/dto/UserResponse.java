@@ -31,6 +31,7 @@ public class UserResponse {
     private String postalCode;
     private String referralCode;
     private String referredByCode;
+    private String profileImageUrl;
     private Set<UserRole> roles;
     private Set<Permission> permissions;
     private UserStatus status;
